@@ -1,5 +1,6 @@
 import io.circe.Decoder
 import scribe.format._
+import sttp.client3.SttpClientException.ReadException
 import sttp.client3._
 import sttp.client3.circe._
 import sttp.client3.logging.scribe.ScribeLoggingBackend
@@ -88,13 +89,18 @@ object SttpClientTimeApp extends scala.App {
     import io.circe.generic.auto._
     try {
       val res = basicRequest.
-      get(uri"http://worldtimeapi.org/api/timezone/Europe/Madrid").
+      get(uri"http://worldtimeapi.org/api/timezone/Europe/MadridXXXX").
       response(asJson[InputLists].getRight).
       send(basicBackend)
       scribe.info(res.body.toString)
     } catch {
-      case ex =>
-        scribe.error(ex.getMessage + "; " + ex.getCause.getMessage)
+      case ex: ReadException =>
+        ex.getCause match {
+          case HttpError(body, statusCode) =>
+            scribe.error("HttpError: "+statusCode+"; "+body.toString)
+          case _ =>
+            scribe.error("some error: "+ex.getCause.toString)
+        }
     }
   }
 

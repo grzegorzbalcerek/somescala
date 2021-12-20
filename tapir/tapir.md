@@ -15,3 +15,4 @@ curl http://localhost:9991/system/pwd
 scala -cp $(ls lib|awk '{printf"lib/"$1"/*:"}END{printf"out/production/tapir"}') TapirAkkaHttpApp
 curl http://localhost:9992/ok
 ```
+* http://localhost:9992/docs

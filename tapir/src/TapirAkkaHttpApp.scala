@@ -20,9 +20,12 @@ object TapirAkkaHttpApp extends scala.App {
       get.in("ok").out(stringBody)
     val countEndpoint = endpoint.
       post.in("count").in(jsonBody[InputLists]).out(jsonBody[OutputCounters])
-    val logicEndpoints = okEndpoint :: countEndpoint :: Nil
-    val openapiEndpoint = SwaggerInterpreter().fromEndpoints[Future](logicEndpoints, "title", "version")
-    val all = logicEndpoints ++ openapiEndpoint
+  val fullLogicEndpoints =
+    Endpoints.okEndpoint.serverLogic(Logic.okLogic) ::
+    Endpoints.countEndpoint.serverLogic(Logic.countLogic) ::
+    Nil
+    val openapiEndpoint = SwaggerInterpreter().fromServerEndpoints[Future](fullLogicEndpoints, "title", "version")
+    val all = fullLogicEndpoints ++ openapiEndpoint
   }
 
   object Logic {
@@ -33,8 +36,7 @@ object TapirAkkaHttpApp extends scala.App {
 
   object Routes {
     val all = AkkaHttpServerInterpreter().toRoute(
-      Endpoints.okEndpoint.serverLogic(Logic.okLogic) ::
-      Endpoints.countEndpoint.serverLogic(Logic.countLogic) ::
+      Endpoints.fullLogicEndpoints ++
         Endpoints.openapiEndpoint)
   }
 

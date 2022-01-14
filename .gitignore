@@ -1,6 +1,7 @@
 lib/
 out/
 .idea/
-app.log
 res.txt
+app.log
+log.log
 **/*.iml

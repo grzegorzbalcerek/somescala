@@ -31,6 +31,7 @@ object SttpClientTimeApp extends scala.App {
   circeAsJsonRetRight()
   wrongCirceAsJson()
   wrongCirceAsJsonRetRight()
+  wrongAsJsonEither()
 
   def txt() = {
     val resp = emptyRequest.
@@ -98,6 +99,25 @@ object SttpClientTimeApp extends scala.App {
         ex.getCause match {
           case HttpError(body, statusCode) =>
             scribe.error("HttpError: "+statusCode+"; "+body.toString)
+          case _ =>
+            scribe.error("some error: "+ex.getCause.toString)
+        }
+    }
+  }
+
+  def wrongAsJsonEither() = {
+    import io.circe.generic.auto._
+    try {
+      val res = basicRequest.
+      get(uri"http://worldtimeapi.org/api/timezone/Europe/MadridXXXX").
+      response(asJsonEither[ErrorResp, InputLists].getRight).
+      send(basicBackend)
+      scribe.info(res.body.toString)
+    } catch {
+      case ex: ReadException =>
+        ex.getCause match {
+          case HttpError(body, statusCode) =>
+            scribe.error("HttpError: "+statusCode+"; "+body.getClass+"; "+body.toString)
           case _ =>
             scribe.error("some error: "+ex.getCause.toString)
         }
